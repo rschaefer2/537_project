@@ -1,10 +1,10 @@
 class Frame:
     frame_num = 0
-    bytes = b'\x00' * 1024
+    data = b'\x00' * 1024
 
-    def __init__(self, frame_num, bytes):
+    def __init__(self, frame_num, data):
         self.frame_num = frame_num
-        self.bytes = bytes
+        self.data = data
 
 
 class FrameBuffer:
@@ -59,8 +59,22 @@ class FrameBuffer:
         # debug statements
         print("Front:\t{}\tFrame {}".format(self.firstFrameIndex, self.framebuf[self.firstFrameIndex].frame_num))
         print("Back:\t{}\tFrame {}\n".format(self.lastFrameIndex, self.framebuf[self.lastFrameIndex].frame_num))
+        print("Current:\t{}\tFrame {}\n".format(self.currentIndex, self.framebuf[self.currentIndex].frame_num))
         self.print_buf()
         return True
+
+
+    def next_frame(self):
+        """returns the next frame if valid and advances current index
+        otherwise return None
+        """
+        nextIndex = (self.currentIndex + 1) % self.BUFFER_SIZE
+        if nextIndex <= self.firstFrameIndex:
+            self.currentIndex = (self.currentIndex + 1) % self.BUFFER_SIZE
+            return self.framebuf[nextIndex]
+        else:
+            return None
+
 
     # for debugging
     def print_buf(self):
