@@ -31,7 +31,7 @@ socket_list = [sock]
 
 while True:
     # check if req from client is pending
-    read_sockets, write_sockets, error_sockets = select.select(socket_list, [], [])
+    read_sockets, write_sockets, error_sockets = select.select(socket_list, [], [], 0)
 
     for s in read_sockets:
         if s == sock:
@@ -40,6 +40,7 @@ while True:
             data, address = s.recvfrom(recv_size)
             recv_size -= len(data)
             while (recv_size != 0):
+                print("Didnt receive full Frame")
                 temp_data, address = s.recvfrom(recv_size)
                 recv_size -= len(data)
                 data += temp_data
@@ -48,24 +49,17 @@ while True:
             if not data:
                     sys.stdout.write('\nDisconnected from server')
             else :
-                # deserialize request from client
-                # frame_request = pickle.load(data)
-
-                # print data for now
-                # sys.stdout.write(frame_request.movie_title)
-                # sys.stdout.write(frame_request.frame_number)
-
                 # save data received in string
                 # send response if valid data
-                        with open(data[5:]) as fin:
-                            fin.seek(int(data[:5]) * 1024)
-                            send_data = fin.read(1024)
-                            barray = bytearray()
-                            barray.extend(data[:5])
-                            barray.extend(send_data)
+                with open(data[5:].split(b'\0', 1)[0]) as fin:
+                    fin.seek(int(data[:5].split(b'\0', 1)[0]) * 1024)
+                    send_data = fin.read(1024)
+                    barray = bytearray()
+                    barray.extend(data[:5])
+                    barray.extend(send_data)
 
-                            # send response
-                            s.sendto(barray, address)
+                    # send response
+                    s.sendto(barray, address)
 
 
 

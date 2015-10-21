@@ -4,10 +4,10 @@ import sys
 from MovieClient import Frame
 import datetime
 
-global data
+data = ''
 currentFrame = 0
 UDP_IP = sys.argv[1]
-UDP_PORT = sys.argv[2]
+UDP_PORT = int(sys.argv[2])
 server = (UDP_IP, UDP_PORT)
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -33,13 +33,17 @@ def create_request_array(frame_number, movie_title):
 def receive_data():
     """receives data from the socket. Returns a Frame if enough data, else returns none"""
     global data
+    print("Receiving Data")
     bytes_received = len(data)
-    data += sock.recvfrom(1029-bytes_received)
-    if len(data) is 1049:
-        frame_number = int(data[:5])
-        frame_data = data[6:]
+    data += sock.recvfrom(1029-bytes_received)[0]
+    print(len(data))
+    print(data)
+    if len(data) == 1029:
+        frame_number = int(data[:5].split(b'\0', 1)[0])
+        frame_data = data[6:].split(b'\0', 1)[0]
         frame = Frame(frame_number, data)
         data = ""
+        print("Returning Frame")
         return frame
     else:
         return None
@@ -48,13 +52,16 @@ def receive_data():
 message = create_request_array(currentFrame, movie)
 sock.sendto(message, server)
 while currentFrame <= 30000:
-    read_sockets, write_sockets, error_sockets = select.select(socket_list, [], [])
+    read_sockets, write_sockets, error_sockets = select.select(socket_list, [], [], 0)
     for s in read_sockets:
         if s == sock:
             frame = receive_data()
             if frame:
                 # add frame to buffer
                 currentFrame += 1
+                message = create_request_array(currentFrame, movie)
+                sock.sendto(message, server)
+                print(currentFrame)
             else:
                 pass
 

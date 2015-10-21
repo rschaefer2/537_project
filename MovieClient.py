@@ -68,7 +68,7 @@ class FrameBuffer:
             print("{} |".format(self.framebuf[i].frame_num)),
         print("")
 
-
+"""
 # Test Code for proving functionality
 circ_buffer = FrameBuffer()
 # in order insertion
@@ -81,3 +81,4 @@ list = [35, 37, 38, 39, 40, 36]
 for i in list:
     f = Frame(i, b'\x00')
     circ_buffer.addFrame(f)
+"""
