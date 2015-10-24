@@ -60,6 +60,7 @@ while True:
 
                     # send response
                     s.sendto(barray, address)
+                    print(barray)
 
 
 
