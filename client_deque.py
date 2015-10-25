@@ -25,6 +25,7 @@ def add_to_deque(deque, flist, last_frame_num, request_list):
                 return
         print("Deque not full: Frame {} not in list".format(new_num))
 
+
 def add_frame_to_list(frame_list, new_frame, last_frame_num):
     new_num = new_frame.frame_num
     # only add the frame if its greater than the most forward frame
@@ -45,6 +46,7 @@ def add_frame_to_list(frame_list, new_frame, last_frame_num):
             print("Frame {} Dropped: Frame List Full".format(new_num))
     else:
         print("Frame {} Dropped: Behind furthest frame Number".format(new_num))
+
 
 def fill_list(frame_deque, frame_list, last_frame_num, request_list):
     # sends requests for the empty spots in the list
@@ -123,13 +125,11 @@ last_frame_num = -1
 #while len(frame_deque) != frame_deque.maxlen:
 
 
-
-
 message = create_request_array(currentFrame, movie)
 sock.sendto(message, server)
 last_frame = current_milli_time()
 # main loop
-while currentFrame <= 10000:
+while currentFrame <= 40:
 
     # read data if its available
     read_sockets, write_sockets, error_sockets = select.select(socket_list, [], [], 0)
@@ -150,6 +150,7 @@ while currentFrame <= 10000:
             frame_times.append(diff)
             last_frame = current_milli_time()
             currentFrame = frame.frame_num + 1
+            print("\n\t\tDisplaying Frame {}".format(frame.frame_num))
 
     # request more than one frame in a row
     fill_list(frame_deque, frame_list, last_frame_num, requests_sent)
