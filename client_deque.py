@@ -17,7 +17,7 @@ def add_to_deque(deque, flist, last_frame_num, request_list):
     except IndexError:
         new_num = last_frame_num + 1
         print("!!! Deque Empty !!!")
-    if new_num < 30000:
+    if new_num <= 30000:
         for i in range(len(flist)):
             if flist[i].frame_num == new_num:
                 deque.appendleft(flist.pop(i))
@@ -62,6 +62,8 @@ def fill_list(frame_deque, frame_list, last_frame_num, request_list):
             next_num += 1
             empty -= 1
         else:
+            if next_num > 30000:
+                return
             print("Filling List: Send Request for {}".format(next_num))
             message = create_request_array(next_num, movie)
             sock.sendto(message, server)
@@ -129,7 +131,7 @@ message = create_request_array(currentFrame, movie)
 sock.sendto(message, server)
 last_frame = current_milli_time()
 # main loop
-while currentFrame <= 40:
+while currentFrame <= 30000:
 
     # read data if its available
     read_sockets, write_sockets, error_sockets = select.select(socket_list, [], [], 0)
