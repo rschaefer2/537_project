@@ -66,7 +66,15 @@ def fill_list(frame_deque, frame_list, last_frame_num, request_list):
                 return
             print("Filling List: Send Request for {}".format(next_num))
             message = create_request_array(next_num, movie)
-            sock.sendto(message, server)
+            if next_num % 4 == 0:
+                sock1.sendto(message, server1)
+            if next_num % 4 == 1:
+                sock2.sendto(message, server2)
+            if next_num % 4 == 2:
+                sock3.sendto(message, server3)
+            if next_num % 4 == 3:
+                sock4.sendto(message, server4)
+                
             request_list.appendleft(next_num)
             next_num += 1
             empty -= 1
@@ -84,11 +92,11 @@ def create_request_array(frame_number, movie_title):
     return barr
 
 
-def receive_data(frame_list, last_frame_num):
+def receive_data(frame_list, last_frame_num, socket):
     """receives data from the socket. Returns a Frame if enough data, else returns none"""
     global data
     bytes_received = len(data)
-    data += sock.recvfrom(1029-bytes_received)[0]
+    data += socket.recvfrom(1029-bytes_received)[0]
     if len(data) >= 1029:
         frame_number = int(data[:5].split(b'\0', 1)[0])
         frame_data = data[6:1029].split(b'\0', 1)[0]
@@ -105,14 +113,31 @@ def current_milli_time():
 
 
 data = ''
+
 UDP_IP = sys.argv[1]
 UDP_PORT = int(sys.argv[2])
-server = (UDP_IP, UDP_PORT)
+server1 = (UDP_IP, UDP_PORT)
 
-sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-socket_list = [sock]
+UDP_IP = sys.argv[3]
+UDP_PORT = int(sys.argv[4])
+server2 = (UDP_IP, UDP_PORT)
+
+UDP_IP = sys.argv[5]
+UDP_PORT = int(sys.argv[6])
+server3 = (UDP_IP, UDP_PORT)
+
+UDP_IP = sys.argv[7]
+UDP_PORT = int(sys.argv[8])
+server4 = (UDP_IP, UDP_PORT)
+
+sock1 = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+sock2 = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+sock3 = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+sock4 = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+socket_list = [sock1, sock2, sock3, sock4]
 try:
-    movie = sys.argv[3]
+    movie = sys.argv[9]
 except IndexError:
     movie = "test_movie.txt"
 
@@ -127,8 +152,8 @@ last_frame_num = -1
 #while len(frame_deque) != frame_deque.maxlen:
 
 
-message = create_request_array(currentFrame, movie)
-sock.sendto(message, server)
+"""message = create_request_array(currentFrame, movie)
+sock.sendto(message, server)"""
 last_frame = current_milli_time()
 # main loop
 while currentFrame <= 30000:
@@ -136,8 +161,8 @@ while currentFrame <= 30000:
     # read data if its available
     read_sockets, write_sockets, error_sockets = select.select(socket_list, [], [], 0)
     for s in read_sockets:
-        if s == sock:
-            receive_data(frame_list, last_frame_num)
+        if s == sock1 or s == sock2 or s == sock3 or s == sock4:
+            receive_data(frame_list, last_frame_num, s)
 
     # print next frame if its > 10ms
     diff = current_milli_time() - last_frame
