@@ -39,7 +39,7 @@ def add_frame_to_list(frame_list, new_frame, last_frame_num):
             # only add frame if the frame isn't already in the list
             if new_num not in [x.frame_num for x in frame_list]:
                 frame_list.append(new_frame)
-               #  print("Added Frame {} to buffer".format(new_num))
+                print("Added Frame {} to buffer".format(new_num))
             else:
                 print("Frame {} Dropped: Frame Already in Buffer".format(new_num))
         else:
@@ -64,7 +64,7 @@ def fill_list(frame_deque, frame_list, last_frame_num, request_list):
         else:
             if next_num > 30000:
                 return
-           #  print("Filling List: Send Request for {}".format(next_num))
+            print("Filling List: Send Request for {}".format(next_num))
             message = create_request_array(next_num, movie)
             if next_num % 4 == 0:
                 sock1.sendto(message, server1)
@@ -158,13 +158,6 @@ last_frame = current_milli_time()
 # main loop
 while currentFrame <= 30000:
 
-    # read data if its available
-    read_sockets, write_sockets, error_sockets = select.select(socket_list, [], [], 0)
-    for s in read_sockets:
-        if s == sock1 or s == sock2 or s == sock3 or s == sock4:
-            receive_data(frame_list, last_frame_num, s)
-
-    # print next frame if its > 10ms
     diff = current_milli_time() - last_frame
     if diff >= 10:
         try:
@@ -177,7 +170,15 @@ while currentFrame <= 30000:
             frame_times.append(diff)
             last_frame = current_milli_time()
             currentFrame = frame.frame_num + 1
-            print("\n\t\tDisplaying Frame {}".format(frame.frame_num))
+            print("\n\t\tDisplaying Frame {} Time: {}".format(frame.frame_num, diff))   
+
+    # read data if its available
+    read_sockets, write_sockets, error_sockets = select.select(socket_list, [], [], 0)
+    for s in read_sockets:
+        if s == sock1 or s == sock2 or s == sock3 or s == sock4:
+            receive_data(frame_list, last_frame_num, s)
+
+    # print next frame if its > 10ms
 
     # request more than one frame in a row
     fill_list(frame_deque, frame_list, last_frame_num, requests_sent)
