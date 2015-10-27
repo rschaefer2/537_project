@@ -156,7 +156,7 @@ last_frame_num = -1
 sock.sendto(message, server)"""
 last_frame = current_milli_time()
 # main loop
-while currentFrame <= 30000:
+while currentFrame <= 1000:
 
     # read data if its available
     read_sockets, write_sockets, error_sockets = select.select(socket_list, [], [], 0)
@@ -188,4 +188,8 @@ while currentFrame <= 30000:
 
 print(frame_times)
 
-print sum(frame_times)/ float(len(frame_times))
+print ("S30000 : {}".format(sum(frame_times)/ float(len(frame_times))))
+print ("S2 : {}".format(sum(frame_times[:2])/ float(2)))
+print ("S10 : {}".format(sum(frame_times[:10])/ float(10)))
+print ("S20 : {} len(FT):  {}".format(sum(frame_times[:20])/ float(20), len(frame_times[:20]))
+print ("S100 : {} len(FT):  {}".format(sum(frame_times[:100])/ float(100), len(frame_times[:100]))
