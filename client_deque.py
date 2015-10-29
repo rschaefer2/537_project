@@ -23,7 +23,7 @@ def add_to_deque(deque, flist, last_frame_num, request_list):
                 deque.appendleft(flist.pop(i))
                 #print("Found Frame in List!")
                 return
-        print("Deque not full: Frame {} not in list".format(new_num))
+        #print("Deque not full: Frame {} not in list".format(new_num))
 
 
 def add_frame_to_list(frame_list, new_frame, last_frame_num):
@@ -172,23 +172,36 @@ while currentFrame <= 30000:
             currentFrame = frame.frame_num + 1
             print("\n\t\tDisplaying Frame {} Time: {}".format(frame.frame_num, diff))   
 
+    temp = current_milli_time()
     # read data if its available
     read_sockets, write_sockets, error_sockets = select.select(socket_list, [], [], 0)
     for s in read_sockets:
         if s == sock1 or s == sock2 or s == sock3 or s == sock4:
             receive_data(frame_list, last_frame_num, s)
-
-    # print next frame if its > 10ms
-
+    
+    temp = temp - current_milli_time()
+    print("Read Time exceeded 5: {}".format(temp))
+    
+    temp = current_milli_time()
     # request more than one frame in a row
     fill_list(frame_deque, frame_list, last_frame_num, requests_sent)
-
+    
+    temp = temp - current_milli_time()
+    print("Fill list exceeded 5: {}".format(temp))
+    
+    temp = current_milli_time() 
     # check if deque needs to be filled
     if len(frame_deque) != frame_deque.maxlen:
         add_to_deque(frame_deque, frame_list, last_frame_num, requests_sent)
 
+    temp = temp - current_milli_time()
+    print("Add to deque Time exceeded 5: {}".format(temp))
+    
 frame_times.sort(reverse=True)
 print(frame_times)
+
+for x in range(1, len(frame_times)):
+	print("{},{}".format(x+2, sum(frame_times[:x])/float(10*len(frame_times[:x]))))
 
 print ("S30000 : {}".format(sum(frame_times)/ float(len(frame_times))))
 print ("S2 : {}".format(sum(frame_times[:2])/ float(2)))
