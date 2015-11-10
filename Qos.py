@@ -19,8 +19,8 @@ class Gos:
                 if delay > self.THRESHOLD:
                     self.active_list.remove(i)
                 else:
-                    if i not in self.main_list:
-                        self.main_list.append(i)
+                    if i not in self.active_list:
+                        self.active_list.append(i)
 
     def create_request_array(self, frame_number, movie_title):
         barr = bytearray()
