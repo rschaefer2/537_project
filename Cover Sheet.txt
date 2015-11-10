@@ -1,0 +1,4 @@
+Team Members: Brandon Schaefer, Ryan Schaefer, Tommi Brandstack
+
+To start server: python UDPServer.py [portnum]
+to start client and stream movie: python client_deque.py node-5 [portnum] node-6 [portnum] node-4 [portnum] node-3 [portnum] test_movie.txt

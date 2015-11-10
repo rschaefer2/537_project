@@ -4,8 +4,8 @@ import sys
 from MovieClient import Frame, FrameBuffer
 import time
 import collections
-
-
+import threading
+import QoS
 
 server_list = [9876, 9877, 9878, 9879]
 server_index = 0
@@ -58,7 +58,18 @@ def fill_list(frame_deque, frame_list, last_frame_num, request_list):
     while empty > 0:
         if next_num in [x.frame_num for x in frame_list]:
             next_num += 1
-        elif next_num in requests_sent:
+        elif next_num in [x for x[0] in requests_sent]:
+            for x in requests_sent:
+                if x[0] == next_num:
+                    if current_milli_time() - x[1] > TIMEOUT:
+                        for i, (socket, server) in enumerate(active_server_list):
+                            if x[2] == server:
+                                del active_server_list[i]
+                                print("Filling List: Send Request for {}".format(next_num))
+                                message = create_request_array(next_num, movie)
+                                server = active_server_list[next_num % len(active_server_list)[0]]
+                                socket = active_server_list[next_num % len(active_server_list)[1]]
+                                socket.sendto(message,server)
             next_num += 1
             empty -= 1
         else:
@@ -66,7 +77,10 @@ def fill_list(frame_deque, frame_list, last_frame_num, request_list):
                 return
             print("Filling List: Send Request for {}".format(next_num))
             message = create_request_array(next_num, movie)
-            if next_num % 4 == 0:
+            server = active_server_list[next_num % len(active_server_list)[0]]
+            socket = active_server_list[next_num % len(active_server_list)[1]]
+            socket.sendto(message,server)
+            """if next_num % 4 == 0:
                 sock1.sendto(message, server1)
             if next_num % 4 == 1:
                 sock2.sendto(message, server2)
@@ -74,8 +88,8 @@ def fill_list(frame_deque, frame_list, last_frame_num, request_list):
                 sock3.sendto(message, server3)
             if next_num % 4 == 3:
                 sock4.sendto(message, server4)
-                
-            request_list.appendleft(next_num)
+            """
+            request_list.appendleft((next_num, current_milli_time(), server))
             next_num += 1
             empty -= 1
 
@@ -135,7 +149,16 @@ sock2 = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 sock3 = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 sock4 = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
-socket_list = [sock1, sock2, sock3, sock4]
+active_list_lock = threading.Lock()
+global_server_list = [(server1, sock1), (server2, sock2), (server3, sock3), (server4, sock4)]
+active_server_list = [(server1, sock1), (server2, sock2), (server3, sock3), (server4, sock4)]
+
+
+# Start Qos thread
+task = Qos.start()
+t = threading.Thread(target=task, ars=(active_list_lock, global_server_list, active_server_list))
+t.start()
+
 try:
     movie = sys.argv[9]
 except IndexError:
