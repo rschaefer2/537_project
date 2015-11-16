@@ -10,8 +10,9 @@ class QoS:
         self.global_server_list = global_server_list
         self.active_server_list = active_server_list
         self.THRESHOLD = 10
-        global data
-        data = ''
+        self.data = ''
+        #global data
+        #data = ''
 
     def start(self):
         while True:
@@ -42,19 +43,18 @@ class QoS:
             barr.extend(bytearray(40-len(barr)))
         return barr
 
-    @staticmethod
-    def receive_data(socket):
+    def receive_data(self, socket):
         #global data
-        bytes_received = len(data)
-        data += socket.recvfrom(1029-bytes_received)[0]
+        bytes_received = len(self.data)
+        self.data += socket.recvfrom(1029-bytes_received)[0]
         frame_number = 0000
-        if len(data) >= 1029:
-            frame_number = int(data[:5].split(b'\0', 1)[0])
+        if len(self.data) >= 1029:
+            frame_number = int(self.data[:5].split(b'\0', 1)[0])
             # frame_data = data[6:1029].split(b'\0', 1)[0]
-            if len(data) > 1029:
-                data = data[1030:]
+            if len(self.data) > 1029:
+                self.data = self.data[1030:]
             else:
-                data = ""
+                self.data = ""
         if frame_number == "9999":
             return True
         return False
