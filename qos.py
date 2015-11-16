@@ -25,7 +25,7 @@ class QoS:
                 # Send QoS message
                 i[1].sendto(self.create_request_array(9999, "QoS_test"), i[0])
                 # Receive QoS message
-                self.receive_data(i[0])
+                self.receive_data(i[1])
                 delay = time.clock() - start
                 if delay > self.THRESHOLD:
                     print("Server added to active list: " + i)
