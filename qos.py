@@ -9,7 +9,7 @@ class QoS:
         self.lock = lock
         self.global_server_list = global_server_list
         self.active_server_list = active_server_list
-        self.THRESHOLD = 0.1
+        self.THRESHOLD = 0.5
         self.data = ''
         #global data
         #data = ''
@@ -24,7 +24,8 @@ class QoS:
                     self.receive_data(i[1])
                 except socket.timeout:
                     print("Server removed from active list: " + str(i[0]))
-                    self.active_server_list.remove(i)
+                    if i in self.active_server_list:
+                        self.active_server_list.remove(i)
                     break
                 if i not in self.active_server_list:
                     print("Server added to active list: " + i)
