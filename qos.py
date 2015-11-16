@@ -17,16 +17,13 @@ class QoS:
     def start(self):
         while True:
             for i in self.global_server_list:
-                print("i[0]:")
-                print(i[0])
-                print("i[1]:")
-                print(i[1])
                 start = time.clock()
                 # Send QoS message
                 i[1].sendto(self.create_request_array(9999, "test_movie.txt"), i[0])
                 # Receive QoS message
                 self.receive_data(i[1])
                 delay = time.clock() - start
+                print("Delay: " + str(delay))
                 if delay > self.THRESHOLD:
                     print("Server added to active list: " + i)
                     self.active_server_list.remove(i)
