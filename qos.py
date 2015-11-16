@@ -10,6 +10,7 @@ class QoS:
         self.global_server_list = global_server_list
         self.active_server_list = active_server_list
         self.THRESHOLD = 10
+        global data
         data = ''
 
     def start(self):
@@ -43,7 +44,7 @@ class QoS:
 
     @staticmethod
     def receive_data(socket):
-        global data
+        #global data
         bytes_received = len(data)
         data += socket.recvfrom(1029-bytes_received)[0]
         frame_number = 0000
