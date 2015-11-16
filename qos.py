@@ -23,12 +23,12 @@ class QoS:
                 try:
                     self.receive_data(i[1])
                 except socket.timeout:
-                    print("Server removed from active list: " + str(i[0]))
                     if i in self.active_server_list:
+                        print("Server removed from active list: " + str(i[0]))
                         self.active_server_list.remove(i)
                     break
                 if i not in self.active_server_list:
-                    print("Server added to active list: " + i)
+                    print("Server added to active list: " + str(i[0]))
                     self.active_server_list.append(i)
 
     @staticmethod
