@@ -9,8 +9,8 @@ class QoS:
         self.lock = lock
         self.global_server_list = global_server_list
         self.active_server_list = active_server_list
-        self.SOCKET_TIMEOUT = 0.05
-        self.REPEAT_TIMEOUT = 2
+        self.SOCKET_TIMEOUT = 0.009
+        self.REPEAT_TIMEOUT = 0.01
         self.data = ''
 
     def start(self):
