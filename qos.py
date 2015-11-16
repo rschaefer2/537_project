@@ -10,6 +10,7 @@ class QoS:
         self.global_server_list = global_server_list
         self.active_server_list = active_server_list
         self.THRESHOLD = 10
+        data = ''
 
     def start(self):
         while True:
