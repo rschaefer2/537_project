@@ -21,7 +21,10 @@ class QoS:
                 # Send QoS message
                 i[1].sendto(self.create_request_array(9999, "test_movie.txt"), i[0])
                 # Receive QoS message
+                i[1].settimeout(0.001)
+                conn, addr = i[1].accept()
                 self.receive_data(i[1])
+
                 delay = time.clock() - start
                 print("Delay: " + str(delay))
                 if delay > self.THRESHOLD:
