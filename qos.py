@@ -9,17 +9,16 @@ class QoS:
         self.lock = lock
         self.global_server_list = global_server_list
         self.active_server_list = active_server_list
-        self.THRESHOLD = 0.5
+        self.SOCKET_TIMEOUT = 0.05
+        self.REPEAT_TIMEOUT = 2
         self.data = ''
-        #global data
-        #data = ''
 
     def start(self):
         while True:
             for i in self.global_server_list:
                 # start = time.clock()
                 i[1].sendto(self.create_request_array(9999, "test_movie.txt"), i[0])
-                i[1].settimeout(self.THRESHOLD)
+                i[1].settimeout(self.SOCKET_TIMEOUT)
                 try:
                     self.receive_data(i[1])
                 except socket.timeout:
@@ -30,6 +29,7 @@ class QoS:
                 if i not in self.active_server_list:
                     print("Server added to active list: " + str(i[0]))
                     self.active_server_list.append(i)
+                time.sleep(self.REPEAT_TIMEOUT)
 
     @staticmethod
     def create_request_array(frame_number, movie_title):
