@@ -23,7 +23,7 @@ class QoS:
                 print(i[1])
                 start = time.clock()
                 # Send QoS message
-                i[1].sendto(self.create_request_array(9999, "QoS_test"), i[0])
+                i[1].sendto(self.create_request_array(9999, "test_movie.txt"), i[0])
                 # Receive QoS message
                 self.receive_data(i[1])
                 delay = time.clock() - start
