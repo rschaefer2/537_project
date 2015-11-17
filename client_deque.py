@@ -5,18 +5,18 @@ from MovieClient import Frame, FrameBuffer
 import time
 import collections
 import threading
-import QoS
+# import QoS
 
 server_list = [9876, 9877, 9878, 9879]
 server_index = 0
-
+TIMEOUT = 500
 # adds one frame from the list to the deque. plenty fast enough
 def add_to_deque(deque, flist, last_frame_num, request_list):
     try:
         new_num = deque[0].frame_num + 1
     except IndexError:
         new_num = last_frame_num + 1
-        print("!!! Deque Empty !!!")
+        # print("!!! Deque Empty !!!")
     if new_num <= 30000:
         for i in range(len(flist)):
             if flist[i].frame_num == new_num:
@@ -57,19 +57,26 @@ def fill_list(frame_deque, frame_list, last_frame_num, request_list):
         next_num = last_frame_num + 1
     while empty > 0:
         if next_num in [x.frame_num for x in frame_list]:
-            next_num += 1
-        elif next_num in [x for x[0] in requests_sent]:
-            for x in requests_sent:
-                if x[0] == next_num:
-                    if current_milli_time() - x[1] > TIMEOUT:
-                        for i, (socket, server) in enumerate(active_server_list):
-                            if x[2] == server:
-                                del active_server_list[i]
-                                print("Filling List: Send Request for {}".format(next_num))
-                                message = create_request_array(next_num, movie)
-                                server = active_server_list[next_num % len(active_server_list)[0]]
-                                socket = active_server_list[next_num % len(active_server_list)[1]]
+            # print("Frame {} already received".format(next_num))
+	    next_num += 1
+        elif next_num in [x[0] for x in request_list]:
+	    for index_req, request in enumerate(request_list):
+                if request[0] == next_num:
+	  	    # print("frame {} already requested".format(request))
+		    # print("current_time - time_sent = {}".format(current_milli_time() - request[1]))
+                    if current_milli_time() - request[1] > TIMEOUT:
+                        print("!!!TIMEOUT!!!")
+			for index, server in enumerate(active_server_list):
+			    if request[2] == server[0]:
+				# print("server {}".format(x[2]))
+                                del (active_server_list[index])
+                                # print("Filling List: Send Request for {}".format(next_num))
+                                # print("{}".format(active_server_list))
+				message = create_request_array(next_num, movie)
+                                server = active_server_list[next_num % len(active_server_list)][0]
+                                socket = active_server_list[next_num % len(active_server_list)][1]
                                 socket.sendto(message,server)
+            			request_list[index_req] = ((next_num, current_milli_time(), server))
             next_num += 1
             empty -= 1
         else:
@@ -77,8 +84,8 @@ def fill_list(frame_deque, frame_list, last_frame_num, request_list):
                 return
             print("Filling List: Send Request for {}".format(next_num))
             message = create_request_array(next_num, movie)
-            server = active_server_list[next_num % len(active_server_list)[0]]
-            socket = active_server_list[next_num % len(active_server_list)[1]]
+            server = active_server_list[next_num % len(active_server_list)][0]
+            socket = active_server_list[next_num % len(active_server_list)][1]
             socket.sendto(message,server)
             """if next_num % 4 == 0:
                 sock1.sendto(message, server1)
@@ -120,6 +127,12 @@ def receive_data(frame_list, last_frame_num, socket):
         else:
             data = ""
         add_frame_to_list(frame_list, new_frame, last_frame_num)
+	# find frame in request_list and remove it
+	for i, x in enumerate(requests_sent):
+	    if x[0] == frame_number:
+		del requests_sent[i]
+		# print("request_list: {}".format(requests_sent))
+		return	
 
 
 def current_milli_time():
@@ -155,9 +168,9 @@ active_server_list = [(server1, sock1), (server2, sock2), (server3, sock3), (ser
 
 
 # Start Qos thread
-task = Qos.start()
-t = threading.Thread(target=task, ars=(active_list_lock, global_server_list, active_server_list))
-t.start()
+# task = Qos.start()
+# t = threading.Thread(target=task, ars=(active_list_lock, global_server_list, active_server_list))
+# t.start()
 
 try:
     movie = sys.argv[9]
@@ -188,6 +201,7 @@ while currentFrame <= 30000:
             if len(frame_deque) == 0:
                 last_frame_num = frame.frame_num
         except IndexError:
+	    print("\n\n\!!!!!\tTrying to print frame, but no frame to print\t!!!!!!\n\n")
             frame = None
         if frame:
             frame_times.append(diff)
@@ -197,20 +211,20 @@ while currentFrame <= 30000:
 
     temp = current_milli_time()
     # read data if its available
-    read_sockets, write_sockets, error_sockets = select.select(socket_list, [], [], 0)
+    read_sockets, write_sockets, error_sockets = select.select([x[1] for x in active_server_list], [], [], 0)
     for s in read_sockets:
         if s == sock1 or s == sock2 or s == sock3 or s == sock4:
             receive_data(frame_list, last_frame_num, s)
     
     temp = temp - current_milli_time()
-    print("Read Time exceeded 5: {}".format(temp))
+    # print("Read Time exceeded 5: {}".format(temp))
     
     temp = current_milli_time()
     # request more than one frame in a row
     fill_list(frame_deque, frame_list, last_frame_num, requests_sent)
     
     temp = temp - current_milli_time()
-    print("Fill list exceeded 5: {}".format(temp))
+    # print("Fill list exceeded 5: {}".format(temp))
     
     temp = current_milli_time() 
     # check if deque needs to be filled
@@ -218,7 +232,7 @@ while currentFrame <= 30000:
         add_to_deque(frame_deque, frame_list, last_frame_num, requests_sent)
 
     temp = temp - current_milli_time()
-    print("Add to deque Time exceeded 5: {}".format(temp))
+    # print("Add to deque Time exceeded 5: {}".format(temp))
     
 frame_times.sort(reverse=True)
 print(frame_times)
