@@ -12,6 +12,7 @@ class QoS:
         self.SOCKET_TIMEOUT = 0.01
         self.REPEAT_TIMEOUT = 0.1
         self.data = ''
+	self.start()
 
     def start(self):
         while True:

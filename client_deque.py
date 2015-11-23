@@ -5,7 +5,7 @@ from MovieClient import Frame, FrameBuffer
 import time
 import collections
 import threading
-# import QoS
+from qos import QoS
 
 server_list = [9876, 9877, 9878, 9879]
 server_index = 0
@@ -217,9 +217,10 @@ active_server_list = [(server1, sock1), (server2, sock2), (server3, sock3), (ser
 
 
 # Start Qos thread
-# task = Qos.start()
-# t = threading.Thread(target=task, ars=(active_list_lock, global_server_list, active_server_list))
-# t.start()
+# task = QoS.start()
+# QoS(active_list_lock, global_server_list, active_server_list)
+t = threading.Thread(target=QoS, args=(active_list_lock, global_server_list, active_server_list))
+t.start()
 
 # start user input processing thread
 commands = collections.deque()
