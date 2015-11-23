@@ -156,6 +156,7 @@ def pause(commands):
 
 def process_commands(commands):
     global last_frame_num
+    global last_frame
     try:
         command = commands.pop()
     except IndexError:
@@ -180,6 +181,8 @@ def process_commands(commands):
                 last_frame_num = currentFrame - 1
             elif command[0].startswith("q"):
                 sys.exit("Exiting...")
+	buffering()
+	last_frame = current_milli_time()
 
 def current_milli_time():
     return int(round(time.time() * 1000))
@@ -243,6 +246,20 @@ last_frame_num = -1
 """message = ereate_request_array(currentFrame, movie)
 sock.sendto(message, server)"""
 last_frame = current_milli_time()
+# pre buffer
+def buffering():
+    while len(frame_deque) != frame_deque.maxlen:
+        read_sockets, write_sockets, error_sockets = select.select([x[1] for x in active_server_list], [], [], 0)
+    	for s in read_sockets:
+	    if s == sock1 or s == sock2 or s == sock3 or s == sock4:
+	    	receive_data(frame_list, last_frame_num, s)
+    	    
+    	fill_list(frame_deque, frame_list, last_frame_num, requests_sent)
+    	add_to_deque(frame_deque, frame_list, last_frame_num, requests_sent)
+
+
+buffering()
+last_frame = current_milli_time()
 # main loop
 while currentFrame <= 30000:
 
@@ -286,10 +303,10 @@ while currentFrame <= 30000:
     process_commands(commands)
 
 frame_times.sort(reverse=True)
-print(frame_times)
+# print(frame_times)
 
-for x in range(1, len(frame_times)):
-	print("{},{}".format(x+2, sum(frame_times[:x])/float(10*len(frame_times[:x]))))
+# for x in range(1, len(frame_times)):
+#	print("{},{}".format(x+2, sum(frame_times[:x])/float(10*len(frame_times[:x]))))
 
 print ("S30000 : {}".format(sum(frame_times)/ float(len(frame_times))))
 print ("S2 : {}".format(sum(frame_times[:2])/ float(2)))
