@@ -136,11 +136,12 @@ def receive_data(frame_list, last_frame_num, socket):
 
 def command_control(commands, stop_event):
     while not stop_event.is_set():
-        command = raw_input("Please enter a command: ")
-        commands.append(command)
+	print "Command Control\n"
+    	command = raw_input("Please enter a command: ")
+   	commands.append(command)
 
-    if command.startswith("q"):
-        break
+    	if command.startswith("q"):
+	    break
 
 def pause(commands):
     while 1:
@@ -150,10 +151,11 @@ def pause(commands):
             command = None
         if command and command.startswith("p"):
             last_frame = current_milli_time()
-            break
+            return
 
 
 def process_commands(commands):
+    global last_frame_num
     try:
         command = commands.pop()
     except IndexError:
@@ -167,7 +169,7 @@ def process_commands(commands):
             if command[0].startswith("f"):
                 currentFrame = int(command[1])
                 frame_deque.clear()
-                frame_list.clear()
+                del frame_list[:]
                 requests_sent.clear()
                 last_frame_num = currentFrame - 1
             elif command[0].startswith("r"):
@@ -176,7 +178,7 @@ def process_commands(commands):
                 frame_list.clear()
                 requests_sent.clear()
                 last_frame_num = currentFrame - 1
-            elif command[0].startswith("q")
+            elif command[0].startswith("q"):
                 sys.exit("Exiting...")
 
 def current_milli_time():
@@ -217,8 +219,9 @@ active_server_list = [(server1, sock1), (server2, sock2), (server3, sock3), (ser
 # t.start()
 
 # start user input processing thread
+commands = collections.deque()
 control_stop = threading.Event()
-control = threading.Thread(None, command_control, None, (commands, control_stop), {})
+control = threading.Thread(None, command_control, None, (commands,control_stop), {})
 control.start()
 
 try:
@@ -231,7 +234,6 @@ frame_deque = collections.deque(maxlen=28)
 frame_list = []
 frame_times = []
 requests_sent = collections.deque(maxlen=15)
-commands = collections.deque(maxlen=3)
 last_frame_num = -1
 
 # initialize frame deque (buffer)
@@ -266,19 +268,20 @@ while currentFrame <= 30000:
         if s == sock1 or s == sock2 or s == sock3 or s == sock4:
             receive_data(frame_list, last_frame_num, s)
     temp = temp - current_milli_time()
-    print("Read sockets time: {}".format(temp))
+    #print("Read sockets time: {}".format(temp))
 
     temp = current_milli_time()
     # request more than one frame in a row
     fill_list(frame_deque, frame_list, last_frame_num, requests_sent)
     temp = temp - current_milli_time()
-    print("Fill list time: {}".format(temp))
+    #print("Fill list time: {}".format(temp))
 
     # check if deque needs to be filled
+    temp = current_milli_time()
     if len(frame_deque) != frame_deque.maxlen:
         add_to_deque(frame_deque, frame_list, last_frame_num, requests_sent)
     temp = temp - current_milli_time()
-    print("Add to deque time: {}".format(temp))
+    #print("Add to deque time: {}".format(temp))
 
     process_commands(commands)
 
