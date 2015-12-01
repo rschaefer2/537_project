@@ -18,7 +18,7 @@ def add_to_deque(deque, flist, last_frame_num, request_list):
         new_num = last_frame_num + 1
         # print("!!! Deque Empty !!!")
     if new_num <= 30000:
-	for i,f in enumerate(flist):
+    for i,f in enumerate(flist):
         if f.frame_num == new_num:
             deque.appendleft(flist.pop(i))
             #print("Deque not full: Frame {} not in list".format(new_num))
@@ -128,12 +128,12 @@ def receive_data(frame_list, last_frame_num, socket):
         else:
             data = ""
 
-	try:
+    try:
         frame_num = frame_deque[0].frame_num
-	except:
+    except:
         frame_num = last_frame_num
 
-	if new_frame.frame_num == frame_num + 1 and len(frame_deque) != frame_deque.maxlen:
+    if new_frame.frame_num == frame_num + 1 and len(frame_deque) != frame_deque.maxlen:
         print "!!STRAIGHT TO DEQUE!! {}".format(new_frame.frame_num)
         inorder += 1
         frame_deque.appendleft(new_frame)
@@ -142,12 +142,12 @@ def receive_data(frame_list, last_frame_num, socket):
         add_frame_to_list(frame_list, new_frame, last_frame_num)
 
     # find frame in request_list and remove it
-	for i, x in enumerate(requests_sent):
+    for i, x in enumerate(requests_sent):
         if x[0] == frame_number:
-		RTT.append(current_milli_time() - x[1])
-		del requests_sent[i]
-		print("request_list: {}".format([(x[0], x[1] - current_milli_time() ) for x in requests_sent]))
-		return
+            RTT.append(current_milli_time() - x[1])
+            del requests_sent[i]
+        print("request_list: {}".format([(x[0], x[1] - current_milli_time() ) for x in requests_sent]))
+        return
 
 def command_control(commands, stop_event):
     while not stop_event.is_set():
@@ -200,8 +200,8 @@ def process_commands(commands):
                 last_frame_num = currentFrame - 1
             elif command[0].startswith("q"):
                 sys.exit("Exiting...")
-	buffering()
-	last_frame = current_milli_time()
+        buffering()
+        last_frame = current_milli_time()
 
 def current_milli_time():
     return int(round(time.time() * 1000))
