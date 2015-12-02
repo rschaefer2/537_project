@@ -19,6 +19,7 @@ class FrameResp:
 
 UDP_PORT = int(sys.argv[1])
 RAND_CHANCE = 25
+RAND_add = 5
 server_address = (socket.gethostname(), UDP_PORT)
 
 # create socket and bind to port on localmachine
@@ -61,14 +62,14 @@ while True:
 
                     # send response
                     s.sendto(barray, address)
-		    print("{}".format(repr(barray)))		
+		    print("{}".format(barray))		
 		    #send req + 4 if rand is less than chance
 		    if(randint(1,100) < RAND_CHANCE):
-		        fin.seek((int(data[:5].split(b'\0', 1)[0]) + 4) * 1024)
+		        fin.seek((int(data[:5].split(b'\0', 1)[0]) + RAND_add) * 1024)
 			# print("Frame_num + 4 = {}".format(int(data[:5].split(b'\0', 1)[0]) + 4))
 			send_data = fin.read(1024)
 			barray = bytearray()
-			frame_num = int(data[:5].split(b'\0', 1)[0]) + 4
+			frame_num = int(data[:5].split(b'\0', 1)[0]) + RAND_add
 			# print("frame_num = {}, data[:5] = {}".format(frame_num, data[:5]))
 			barray.extend("{}{}".format(frame_num,'\0'))
 			barray.extend(send_data)
@@ -76,7 +77,7 @@ while True:
 				barray.extend(bytearray(1029-len(barray)))
 			
                         s.sendto(barray, address)
-			print("RANDOM SEND : {}".format(repr(barray)))				
+			print("RANDOM SEND : {}".format(frame_num))				
 		
 
 
