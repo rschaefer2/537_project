@@ -11,6 +11,7 @@ server_list = [9876, 9877, 9878, 9879]
 server_index = 0
 TIMEOUT = 700
 
+
 def add_to_deque(deque, flist, last_frame_num, request_list):
     try:
         new_num = deque[0].frame_num + 1
@@ -69,7 +70,7 @@ def fill_list(frame_deque, frame_list, last_frame_num, request_list):
                         print("!!!TIMEOUT!!!")
                         for index, server in enumerate(active_server_list):
                             if request[2] == server[0]:
-                                print("server {}".format(x[2]))
+                                #print("server {}".format(x[2]))
                                 del (active_server_list[index])
                         print("Filling List: Send Request for {}".format(next_num))
                         print("{}".format(active_server_list))
@@ -238,10 +239,10 @@ active_server_list = [(server1, sock1), (server2, sock2), (server3, sock3), (ser
 
 
 # Start Qos thread
-# task = QoS.start()
-# QoS(active_list_lock, global_server_list, active_server_list)
-# t = threading.Thread(target=QoS, args=(active_list_lock, global_server_list, active_server_list))
-# t.start()
+task = QoS.start()
+QoS(active_list_lock, global_server_list, active_server_list)
+t = threading.Thread(target=QoS, args=(active_list_lock, global_server_list, active_server_list))
+t.start()
 
 # start user input processing thread
 commands = collections.deque()
