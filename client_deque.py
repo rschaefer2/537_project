@@ -31,7 +31,7 @@ def add_frame_to_list(frame_list, new_frame, last_frame_num):
         front_num = frame_deque[0].frame_num
     except IndexError:
         front_num = last_frame_num
-    if new_num > front_num:
+    if new_num > front_num and new_num < front_num + 31:
         # only add frame if the list isn't "full"
         if len(frame_list) < frame_list_max:
             # only add frame if the frame isn't already in the list
@@ -44,23 +44,21 @@ def add_frame_to_list(frame_list, new_frame, last_frame_num):
             print("Frame {} Dropped: Frame List Full".format(new_num))
     else:
         print("Frame {} Dropped: Behind furthest frame Number".format(new_num))
+    print "Last Frame Acked: {}".format(front_num)
     print "Out of order length: {}".format(len(frame_list))
-    print [x.frame_num for x in frame_list]
-    print front_num
+    print "Frame List: {}".format([x.frame_num for x in frame_list])
 
 
 def fill_list(frame_deque, frame_list, last_frame_num, request_list):
-    # sends requests for the empty spots in the list
-    empty = frame_list_max - len(frame_list) + 1
     try:
         next_num = frame_deque[0].frame_num + 1
     except IndexError:
         next_num = last_frame_num + 1
-    while empty > 0:
+    
+    while len(request_list) <= request_list_max:
         if next_num in [x.frame_num for x in frame_list]:
-            # print("Frame {} already received".format(next_num))
             next_num += 1
-        elif next_num in [x[0] for x in request_list]:
+        if next_num in [x[0] for x in request_list]:
             for index_req, request in enumerate(request_list):
                 if request[0] == next_num:
                     # print("frame {} already requested".format(request))
@@ -70,7 +68,7 @@ def fill_list(frame_deque, frame_list, last_frame_num, request_list):
                         for index, server in enumerate(active_server_list):
                             if request[2] == server[0]:
                                 print("server {}".format(x[2]))
-                                del (active_server_list[index])
+                                # del (active_server_list[index])
                         print("Filling List: Send Request for {}".format(next_num))
                         print("{}".format(active_server_list))
                         message = create_request_array(next_num, movie)
@@ -79,7 +77,6 @@ def fill_list(frame_deque, frame_list, last_frame_num, request_list):
                         socket.sendto(message,server)
                         request_list[index_req] = ((next_num, current_milli_time(), server))
             next_num += 1
-            empty -= 1
         else:
             if next_num > 30000:
                 return
@@ -99,7 +96,7 @@ def fill_list(frame_deque, frame_list, last_frame_num, request_list):
             """
             request_list.appendleft((next_num, current_milli_time(), server))
             next_num += 1
-            empty -= 1
+            return
 
 
 def create_request_array(frame_number, movie_title):
@@ -133,6 +130,8 @@ def receive_data(frame_list, last_frame_num, socket):
     except:
         frame_num = last_frame_num
 
+    print "Received Frame {}".format(new_frame.frame_num)
+    print "Deque {}".format(frame_deque)
     if new_frame.frame_num == frame_num + 1 and len(frame_deque) != frame_deque.maxlen:
         print "!!STRAIGHT TO DEQUE!! {}".format(new_frame.frame_num)
         inorder += 1
@@ -146,8 +145,11 @@ def receive_data(frame_list, last_frame_num, socket):
         if x[0] == frame_number:
             RTT.append(current_milli_time() - x[1])
             del requests_sent[i]
-        print("request_list: {}".format([(x[0], current_milli_time() - x[1]) for x in requests_sent]))
-        return
+            print("request_list: {}".format([(x[0], current_milli_time() - x[1]) for x in requests_sent]))
+            print("request_list size: {}".format(len(requests_sent)))
+            print("\n")
+            #print "RTT: {}".format(RTT)
+            return
 
 def command_control(commands, stop_event):
     while not stop_event.is_set():
@@ -255,9 +257,10 @@ except IndexError:
     movie = "test_movie.txt"
 
 currentFrame = 0
-frame_deque = collections.deque(maxlen=30)
+frame_deque = collections.deque(maxlen=1)
 frame_list = []
-frame_list_max = 2
+frame_list_max = 31
+request_list_max = 40
 frame_times = []
 RTT = []
 requests_sent = collections.deque()
@@ -282,9 +285,10 @@ def buffering():
 
 
 buffering()
+#pause(commands)
 last_frame = current_milli_time()
 # main loop
-while currentFrame <= 30000:
+while currentFrame <= 5000:
 
     diff = current_milli_time() - last_frame
     if diff >= 10:
@@ -293,7 +297,7 @@ while currentFrame <= 30000:
             if len(frame_deque) == 0:
                 last_frame_num = frame.frame_num
         except IndexError:
-            print("\n\n\!!!!!\tTrying to print frame, but no frame to print\t!!!!!!\n\n")
+            # print("\n\n\!!!!!\tTrying to print frame, but no frame to print\t!!!!!!\n\n")
             frame = None
         if frame:
             frame_times.append(diff)
@@ -310,18 +314,18 @@ while currentFrame <= 30000:
     temp = temp - current_milli_time()
     #print("Read sockets time: {}".format(temp))
 
-    temp = current_milli_time()
-    # request more than one frame in a row
-    fill_list(frame_deque, frame_list, last_frame_num, requests_sent)
-    temp = temp - current_milli_time()
-    #print("Fill list time: {}".format(temp))
-
     # check if deque needs to be filled
     temp = current_milli_time()
     if len(frame_deque) != frame_deque.maxlen:
         add_to_deque(frame_deque, frame_list, last_frame_num, requests_sent)
     temp = temp - current_milli_time()
     #print("Add to deque time: {}".format(temp))
+
+    temp = current_milli_time()
+    # request more than one frame in a row
+    fill_list(frame_deque, frame_list, last_frame_num, requests_sent)
+    temp = temp - current_milli_time()
+    #print("Fill list time: {}".format(temp))
 
     process_commands(commands)
 
@@ -337,7 +341,7 @@ print "RTT {}".format(RTT)
 print "RTT AVG: {}".format(sum(RTT)/float(len(RTT)))
 print "in order: {}".format(inorder)
 print "out of order: {}".format(ooorder)
-print ("S30000 : {}".format(sum(frame_times)/ float(len(frame_times))))
+print ("S30000 (ALL) : {}".format(sum(frame_times)/ float(len(frame_times))))
 print ("S2 : {}".format(sum(frame_times[:2])/ float(2)))
 print ("S10 : {}".format(sum(frame_times[:10])/ float(10)))
 print ("S20 : {} len(FT):  {}".format(sum(frame_times[:20])/ float(20), len(frame_times[:20])))
