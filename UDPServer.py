@@ -5,6 +5,7 @@ import sys
 import ast
 import select
 import pickle
+from random import randint
 
 class FrameResp:
     frame_number = 0
@@ -17,7 +18,7 @@ class FrameResp:
         self.ba = data
 
 UDP_PORT = int(sys.argv[1])
-
+RAND_CHANCE = 25
 server_address = (socket.gethostname(), UDP_PORT)
 
 # create socket and bind to port on localmachine
@@ -52,7 +53,7 @@ while True:
                 # save data received in string
                 # send response if valid data
                 with open(data[5:].split(b'\0', 1)[0]) as fin:
-                    fin.seek(int(data[:5].split(b'\0', 1)[0]) * 1024)
+		    fin.seek(int(data[:5].split(b'\0', 1)[0]) * 1024)
                     send_data = fin.read(1024)
                     barray = bytearray()
                     barray.extend(data[:5])
@@ -60,7 +61,22 @@ while True:
 
                     # send response
                     s.sendto(barray, address)
-                    print(barray)
-
+		    print("{}".format(repr(barray)))		
+		    #send req + 4 if rand is less than chance
+		    if(randint(1,100) < RAND_CHANCE):
+		        fin.seek((int(data[:5].split(b'\0', 1)[0]) + 4) * 1024)
+			# print("Frame_num + 4 = {}".format(int(data[:5].split(b'\0', 1)[0]) + 4))
+			send_data = fin.read(1024)
+			barray = bytearray()
+			frame_num = int(data[:5].split(b'\0', 1)[0]) + 4
+			# print("frame_num = {}, data[:5] = {}".format(frame_num, data[:5]))
+			barray.extend("{}{}".format(frame_num,'\0'))
+			barray.extend(send_data)
+                        if len(barray) < 1029:
+				barray.extend(bytearray(1029-len(barray)))
+			
+                        s.sendto(barray, address)
+			print("RANDOM SEND : {}".format(repr(barray)))				
+		
 
 
