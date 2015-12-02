@@ -71,7 +71,7 @@ def fill_list(frame_deque, frame_list, last_frame_num, request_list):
                                 # del (active_server_list[index])
                         print("Filling List: Send Request for {}".format(next_num))
                         print("{}".format(active_server_list))
-                        message = create_request_array(next_num, movie)
+                        message = create_request_array(next_num, movie, 1)
                         server = active_server_list[next_num % len(active_server_list)][0]
                         socket = active_server_list[next_num % len(active_server_list)][1]
                         socket.sendto(message,server)
@@ -81,7 +81,7 @@ def fill_list(frame_deque, frame_list, last_frame_num, request_list):
             if next_num > 30000:
                 return
             #print("Filling List: Send Request for {}".format(next_num))
-            message = create_request_array(next_num, movie)
+            message = create_request_array(next_num, movie, 4)
             server = active_server_list[next_num % len(active_server_list)][0]
             socket = active_server_list[next_num % len(active_server_list)][1]
             socket.sendto(message,server)
@@ -94,16 +94,21 @@ def fill_list(frame_deque, frame_list, last_frame_num, request_list):
             if next_num % 4 == 3:
                 sock4.sendto(message, server4)
             """
-            request_list.appendleft((next_num, current_milli_time(), server))
+            # mock requests sent due to group requests
+            for i in range(0,4):
+                request_list.appendleft((next_num+i*len(active_server_list), current_milli_time(), server))
             next_num += 1
             return
 
 
-def create_request_array(frame_number, movie_title):
+def create_request_array(frame_number, movie_title, frames):
     barr = bytearray()
     barr.extend("{}".format(frame_number))
     barr.extend(bytearray(5-len(barr)))
+    barr.extend("{}".format(len(active_server_list)))
+    barr.extend("{}".format(frames))
     barr.extend(movie_title)
+    print repr(barr)
     if len(barr) > 40:
         barr = barr[:40]
     else:
@@ -285,7 +290,7 @@ def buffering():
 
 
 buffering()
-#pause(commands)
+pause(commands)
 last_frame = current_milli_time()
 # main loop
 while currentFrame <= 5000:
