@@ -31,22 +31,22 @@ def add_frame_to_list(frame_list, new_frame, last_frame_num):
         front_num = frame_deque[0].frame_num
     except IndexError:
         front_num = last_frame_num
-    if new_num > front_num:
+    if (new_num > front_num) and (new_num <=(front_num + frame_list_max)):
         # only add frame if the list isn't "full"
         if len(frame_list) < frame_list_max:
             # only add frame if the frame isn't already in the list
             if new_num not in [x.frame_num for x in frame_list]:
                 frame_list.append(new_frame)
                 #print("Added Frame {} to buffer".format(new_num))
-            #else:
-                #print("Frame {} Dropped: Frame Already in Buffer".format(new_num))
+            else:
+                print("Frame {} Dropped: Frame Already in Buffer".format(new_num))
         else:
             print("Frame {} Dropped: Frame List Full".format(new_num))
     else:
         print("Frame {} Dropped: Behind furthest frame Number".format(new_num))
-    print "Out of order length: {}".format(len(frame_list))
-    print [x.frame_num for x in frame_list]
-    print front_num
+    #print "Out of order length: {}".format(len(frame_list))
+    #print [x.frame_num for x in frame_list]
+    #print front_num
 
 
 def fill_list(frame_deque, frame_list, last_frame_num, request_list):
@@ -71,8 +71,8 @@ def fill_list(frame_deque, frame_list, last_frame_num, request_list):
                             if request[2] == server[0]:
                                 print("server {}".format(x[2]))
                                 del (active_server_list[index])
-                        print("Filling List: Send Request for {}".format(next_num))
-                        print("{}".format(active_server_list))
+                        #print("Filling List: Send Request for {}".format(next_num))
+                        #print("{}".format(active_server_list))
                         message = create_request_array(next_num, movie)
                         server = active_server_list[next_num % len(active_server_list)][0]
                         socket = active_server_list[next_num % len(active_server_list)][1]
@@ -119,6 +119,7 @@ def receive_data(frame_list, last_frame_num, socket):
     global data, inorder, ooorder
     bytes_received = len(data)
     data += socket.recvfrom(1029-bytes_received)[0]
+    #print("data: {} len(data): {}".format(data, len(data)))
     if len(data) >= 1029:
         frame_number = int(data[:5].split(b'\0', 1)[0])
         frame_data = data[6:1029].split(b'\0', 1)[0]
@@ -146,7 +147,7 @@ def receive_data(frame_list, last_frame_num, socket):
         if x[0] == frame_number:
             RTT.append(current_milli_time() - x[1])
             del requests_sent[i]
-        print("request_list: {}".format([(x[0], current_milli_time() - x[1]) for x in requests_sent]))
+        #print("request_list: {}".format([(x[0], current_milli_time() - x[1]) for x in requests_sent]))
         return
 
 def command_control(commands, stop_event):
@@ -255,9 +256,9 @@ except IndexError:
     movie = "test_movie.txt"
 
 currentFrame = 0
-frame_deque = collections.deque(maxlen=30)
+frame_deque = collections.deque(maxlen=28)
 frame_list = []
-frame_list_max = 2
+frame_list_max = 4
 frame_times = []
 RTT = []
 requests_sent = collections.deque()
