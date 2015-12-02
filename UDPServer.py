@@ -5,6 +5,7 @@ import sys
 import ast
 import select
 import pickle
+import time
 
 class FrameResp:
     frame_number = 0
@@ -51,16 +52,24 @@ while True:
             else :
                 # save data received in string
                 # send response if valid data
-                with open(data[5:].split(b'\0', 1)[0]) as fin:
-                    fin.seek(int(data[:5].split(b'\0', 1)[0]) * 1024)
-                    send_data = fin.read(1024)
-                    barray = bytearray()
-                    barray.extend(data[:5])
-                    barray.extend(send_data)
+                with open(data[7:].split(b'\0', 1)[0]) as fin:
+                    spacing = int(data[5])
+                    frame_num = int(data[:5].split(b'\0', 1)[0])
+                    number = int(data[6])
+                    print "Request Frame Number {}".format(frame_num)
+                    print "Spacing {}".format(spacing)
+                    print "Number {}".format(number)
+                    for i in range(0,number):
+                        fin.seek( (frame_num+i*spacing) * 1024)
+                        send_data = fin.read(1024)
+                        barray = bytearray()
+                        barray.extend("{}".format(str(frame_num + i*spacing)))
+                        barray.extend(bytearray(5-len(barray)))
+                        barray.extend(send_data)
 
-                    # send response
-                    s.sendto(barray, address)
-                    print(barray)
-
-
+                        # send response
+                        s.sendto(barray, address)
+                        print(barray)
+                        print(len(barray))
+                        time.sleep(40/1000.0)
 
