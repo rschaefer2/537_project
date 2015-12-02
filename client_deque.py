@@ -124,6 +124,9 @@ def receive_data(frame_list, last_frame_num, socket):
         frame_number = int(data[:5].split(b'\0', 1)[0])
         frame_data = data[6:1029].split(b'\0', 1)[0]
         new_frame = Frame(frame_number, data)
+        if frame_number == 9999:
+            print("!!!!Client received qos packet!!!!")
+            return
         if len(data) > 1029:
             data = data[1030:]
         else:
