@@ -18,10 +18,10 @@ def add_to_deque(deque, flist, last_frame_num, request_list):
         new_num = last_frame_num + 1
         # print("!!! Deque Empty !!!")
     if new_num <= 30000:
-    for i,f in enumerate(flist):
-        if f.frame_num == new_num:
-            deque.appendleft(flist.pop(i))
-            #print("Deque not full: Frame {} not in list".format(new_num))
+        for i,f in enumerate(flist):
+            if f.frame_num == new_num:
+                deque.appendleft(flist.pop(i))
+                # print("Deque not full: Frame {} not in list".format(new_num))
 
 
 def add_frame_to_list(frame_list, new_frame, last_frame_num):
@@ -146,7 +146,7 @@ def receive_data(frame_list, last_frame_num, socket):
         if x[0] == frame_number:
             RTT.append(current_milli_time() - x[1])
             del requests_sent[i]
-        print("request_list: {}".format([(x[0], x[1] - current_milli_time() ) for x in requests_sent]))
+        print("request_list: {}".format([(x[0], current_milli_time() - x[1]) for x in requests_sent]))
         return
 
 def command_control(commands, stop_event):
@@ -162,8 +162,8 @@ def pause(commands):
     while 1:
         read_sockets, write_sockets, error_sockets = select.select([x[1] for x in active_server_list], [], [], 0)
         for s in read_sockets:
-        if s == sock1 or s == sock2 or s == sock3 or s == sock4:
-            receive_data(frame_list, last_frame_num, s)
+            if s == sock1 or s == sock2 or s == sock3 or s == sock4:
+                receive_data(frame_list, last_frame_num, s)
         try:
             command = commands.pop()
         except IndexError:
