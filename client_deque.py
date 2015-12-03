@@ -260,7 +260,7 @@ currentFrame = 0
 frame_deque = collections.deque(maxlen=1)
 frame_list = []
 frame_list_max = 31
-request_list_max = 40
+request_list_max = 60
 frame_times = []
 RTT = []
 requests_sent = collections.deque()
