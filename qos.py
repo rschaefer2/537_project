@@ -9,7 +9,7 @@ class QoS:
         self.global_server_list = global_server_list
         self.active_server_list = active_server_list
         self.SOCKET_TIMEOUT = 0.01
-        self.REPEAT_TIMEOUT = 0.1
+        self.UPDATE_SEQUENCE = 1  # 0.1
         self.data = ''
         self.start()
 
@@ -29,7 +29,7 @@ class QoS:
                 if i not in self.active_server_list:
                     print("Server added to active list: " + str(i[0]))
                     self.active_server_list.append(i)
-                time.sleep(self.REPEAT_TIMEOUT)
+                time.sleep(self.UPDATE_SEQUENCE)
 
     @staticmethod
     def create_request_array(frame_number, movie_title):
