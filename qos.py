@@ -11,16 +11,25 @@ class QoS:
         self.SOCKET_TIMEOUT = 0.01
         self.UPDATE_SEQUENCE = 1.5  # 0.1
         self.data = ''
+        sock1 = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        sock2 = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        sock3 = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        sock4 = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.socketList = [sock1, sock2, sock3, sock4]
         self.start()
 
     def start(self):
         while True:
+            index = 0
             for i in self.global_server_list:
                 # start = time.clock()
-                i[1].sendto(self.create_request_array(9999, "test_movie.txt"), i[0])
-                i[1].settimeout(self.SOCKET_TIMEOUT)
+                #i[1].sendto(self.create_request_array(9999, "test_movie.txt"), i[0])
+                #i[1].settimeout(self.SOCKET_TIMEOUT)
+                self.socketList[index].sendto(self.create_request_array(9999, "test_movie.txt"), i[0])
+                self.socketList[index].settimeout(self.SOCKET_TIMEOUT)
                 try:
-                    self.receive_data(i[1])
+                    #self.receive_data(i[1])
+                    self.receive_data(self.socketList[index])
                 except socket.timeout:
                     if i in self.active_server_list:
                         print("Server removed from active list: " + str(i[0]))
@@ -30,6 +39,7 @@ class QoS:
                     print("Server added to active list: " + str(i[0]))
                     self.active_server_list.append(i)
                 time.sleep(self.UPDATE_SEQUENCE)
+                index += 1
 
     @staticmethod
     def create_request_array(frame_number, movie_title):
