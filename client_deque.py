@@ -98,16 +98,10 @@ def fill_list(frame_deque, frame_list, last_frame_num, request_list):
 
 def send_request(message, frame_num):
     i = frame_num % len(active_server_list)
-    average = sum([x[2] for x in active_server_list])/float(len(active_server_list))
-    while True:
-        if randint(0, 10) < (average * 10)/active_server_list[i][2]:
-            server = active_server_list[i][0]
-            socket = active_server_list[i][1]
-            socket.sendto(message,server)
-            return server
-        i += 1;
-        if i > len(active_server_list) - 1:
-            i = 0
+    server = active_server_list[i][0]
+    socket = active_server_list[i][1]
+    socket.sendto(message,server)
+    return server
         
     
 def create_request_array(frame_number, movie_title):
@@ -155,7 +149,7 @@ def receive_data(frame_list, last_frame_num, socket):
     for i, x in enumerate(requests_sent):
         if x[0] == frame_number:
             RTT.append(current_milli_time() - x[1])
-            #request_list_max = sum(RTT)/(float(len(RTT)) * 10)
+            request_list_max = sum(RTT)/(float(len(RTT)) * 10)
             for server in active_server_list:
                 if server[0] == requests_sent[i][2]:
                     server[2] = (server[2] + current_milli_time() - x[1])
