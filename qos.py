@@ -83,4 +83,3 @@ if __name__ == "__main__":
     global_server_list = [(server1, sock1), (server2, sock2), (server3, sock3), (server4, sock4)]
     active_server_list = [(server1, sock1), (server2, sock2), (server3, sock3), (server4, sock4)]
     qos = QoS("lock", global_server_list, active_server_list)
-    qos.start()
