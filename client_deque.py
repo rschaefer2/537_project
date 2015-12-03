@@ -297,7 +297,7 @@ def buffering():
 
 
 buffering()
-pause(commands)
+#pause(commands)
 last_frame = current_milli_time()
 # main loop
 while currentFrame <= 30000:
