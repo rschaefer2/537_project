@@ -9,7 +9,7 @@ from qos import QoS
 
 server_list = [9876, 9877, 9878, 9879]
 server_index = 0
-TIMEOUT = 700
+TIMEOUT = 900
 
 
 def add_to_deque(deque, flist, last_frame_num, request_list):
@@ -128,7 +128,7 @@ def receive_data(frame_list, last_frame_num, socket):
         frame_data = data[6:1029].split(b'\0', 1)[0]
         new_frame = Frame(frame_number, data)
         if frame_number == 9999:
-            print("!!!!Client received qos packet!!!!")
+            print("!!!!----------Client received qos packet---------!!!!")
             return
         if len(data) > 1029:
             data = data[1030:]
@@ -246,9 +246,9 @@ active_server_list = [(server1, sock1), (server2, sock2), (server3, sock3), (ser
 
 # Start Qos thread
 # task = QoS.start()
-#QoS(active_list_lock, global_server_list, active_server_list)
-#t = threading.Thread(target=QoS, args=(active_list_lock, global_server_list, active_server_list))
-#t.start()
+QoS(active_list_lock, global_server_list, active_server_list)
+t = threading.Thread(target=QoS, args=(active_list_lock, global_server_list, active_server_list))
+t.start()
 
 # start user input processing thread
 commands = collections.deque()

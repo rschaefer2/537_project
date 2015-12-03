@@ -9,7 +9,7 @@ class QoS:
         self.global_server_list = global_server_list
         self.active_server_list = active_server_list
         self.SOCKET_TIMEOUT = 0.01
-        self.UPDATE_SEQUENCE = 1  # 0.1
+        self.UPDATE_SEQUENCE = 1.5  # 0.1
         self.data = ''
         self.start()
 
