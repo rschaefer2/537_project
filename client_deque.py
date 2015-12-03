@@ -332,8 +332,8 @@ while currentFrame <= 30000:
 
     process_commands(commands)
 
-    print("Active server: " + active_server_list)
-    print("Global Server: " + global_server_list)
+    print(active_server_list)
+    print(global_server_list)
 
 
 frame_times.sort(reverse=True)
