@@ -9,7 +9,7 @@ from qos import QoS
 
 server_list = [9876, 9877, 9878, 9879]
 server_index = 0
-TIMEOUT = 800
+TIMEOUT = 900
 
 def add_to_deque(deque, flist, last_frame_num, request_list):
     try:
@@ -265,7 +265,7 @@ currentFrame = 0
 frame_deque = collections.deque(maxlen=1)
 frame_list = []
 frame_list_max = 31
-request_list_max = 40
+request_list_max = 60
 frame_times = []
 RTT = []
 requests_sent = collections.deque()
