@@ -6,10 +6,11 @@ import time
 import collections
 import threading
 from qos import QoS
+from random import randint
 
 server_list = [9876, 9877, 9878, 9879]
 server_index = 0
-TIMEOUT = 700
+TIMEOUT = 900
 
 def add_to_deque(deque, flist, last_frame_num, request_list):
     try:
@@ -72,9 +73,7 @@ def fill_list(frame_deque, frame_list, last_frame_num, request_list):
                         print("Filling List: Send Request for {}".format(next_num))
                         print("{}".format(active_server_list))
                         message = create_request_array(next_num, movie)
-                        server = active_server_list[next_num % len(active_server_list)][0]
-                        socket = active_server_list[next_num % len(active_server_list)][1]
-                        socket.sendto(message,server)
+                        server = send_request(message, next_num)
                         request_list[index_req] = ((next_num, current_milli_time(), server))
             next_num += 1
         else:
@@ -82,9 +81,7 @@ def fill_list(frame_deque, frame_list, last_frame_num, request_list):
                 return
             #print("Filling List: Send Request for {}".format(next_num))
             message = create_request_array(next_num, movie)
-            server = active_server_list[next_num % len(active_server_list)][0]
-            socket = active_server_list[next_num % len(active_server_list)][1]
-            socket.sendto(message,server)
+            server = send_request(message, next_num) 
             """if next_num % 4 == 0:
                 sock1.sendto(message, server1)
             if next_num % 4 == 1:
@@ -99,6 +96,20 @@ def fill_list(frame_deque, frame_list, last_frame_num, request_list):
             return
 
 
+def send_request(message, frame_num):
+    i = frame_num % len(active_server_list)
+    average = sum([x[2] for x in active_server_list])/float(len(active_server_list))
+    while True:
+        if randint(0, 10) < (average * 10)/active_server_list[i][2]:
+            server = active_server_list[i][0]
+            socket = active_server_list[i][1]
+            socket.sendto(message,server)
+            return server
+        i += 1;
+        if i > len(active_server_list) - 1:
+            i = 0
+        
+    
 def create_request_array(frame_number, movie_title):
     barr = bytearray()
     barr.extend("{}".format(frame_number))
@@ -113,7 +124,7 @@ def create_request_array(frame_number, movie_title):
 
 def receive_data(frame_list, last_frame_num, socket):
     """receives data from the socket. Returns a Frame if enough data, else returns none"""
-    global data, inorder, ooorder
+    global data, inorder, ooorder, request_list_max
     bytes_received = len(data)
     data += socket.recvfrom(1029-bytes_received)[0]
     if len(data) >= 1029:
@@ -144,6 +155,12 @@ def receive_data(frame_list, last_frame_num, socket):
     for i, x in enumerate(requests_sent):
         if x[0] == frame_number:
             RTT.append(current_milli_time() - x[1])
+            #request_list_max = sum(RTT)/(float(len(RTT)) * 10)
+            for server in active_server_list:
+                if server[0] == requests_sent[i][2]:
+                    server[2] = (server[2] + current_milli_time() - x[1])
+
+            print(request_list_max)
             del requests_sent[i]
             print("request_list: {}".format([(x[0], current_milli_time() - x[1]) for x in requests_sent]))
             print("request_list size: {}".format(len(requests_sent)))
@@ -236,7 +253,7 @@ sock4 = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
 active_list_lock = threading.Lock()
 global_server_list = [(server1, sock1), (server2, sock2), (server3, sock3), (server4, sock4)]
-active_server_list = [(server1, sock1), (server2, sock2), (server3, sock3), (server4, sock4)]
+active_server_list = [[server1, sock1, 600], [server2, sock2, 600], [server3, sock3, 600], [server4, sock4, 600]]
 
 
 # Start Qos thread
@@ -288,7 +305,7 @@ buffering()
 #pause(commands)
 last_frame = current_milli_time()
 # main loop
-while currentFrame <= 5000:
+while currentFrame <= 30000:
 
     diff = current_milli_time() - last_frame
     if diff >= 10:
@@ -334,7 +351,6 @@ frame_times.sort(reverse=True)
 
 # for x in range(1, len(frame_times)):
 #	print("{},{}".format(x+2, sum(frame_times[:x])/float(10*len(frame_times[:x]))))
-
 
 RTT.sort(reverse=True)
 print "RTT {}".format(RTT)
