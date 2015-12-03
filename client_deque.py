@@ -155,7 +155,7 @@ def receive_data(frame_list, last_frame_num, socket):
     for i, x in enumerate(requests_sent):
         if x[0] == frame_number:
             RTT.append(current_milli_time() - x[1])
-            #request_list_max = sum(RTT)/(float(len(RTT)) * 10)
+            request_list_max = sum(RTT)/(float(len(RTT)) * 10)
             for server in active_server_list:
                 if server[0] == requests_sent[i][2]:
                     server[2] = (server[2] + current_milli_time() - x[1])
