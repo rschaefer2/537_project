@@ -74,6 +74,9 @@ def fill_list(frame_deque, frame_list, last_frame_num, request_list):
                                 del (active_server_list[index])
                         print("Filling List: Send Request for {}".format(next_num))
                         print("{}".format(active_server_list))
+                        if len(active_server_list) == 0:
+                            print("Active list is empty")
+                            return
                         message = create_request_array(next_num, movie)
                         server = active_server_list[next_num % len(active_server_list)][0]
                         socket = active_server_list[next_num % len(active_server_list)][1]
