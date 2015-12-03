@@ -9,7 +9,7 @@ from qos import QoS
 
 server_list = [9876, 9877, 9878, 9879]
 server_index = 0
-TIMEOUT = 700
+TIMEOUT = 800
 
 def add_to_deque(deque, flist, last_frame_num, request_list):
     try:
@@ -291,10 +291,10 @@ def buffering():
 
 
 buffering()
-pause(commands)
+#pause(commands)
 last_frame = current_milli_time()
 # main loop
-while currentFrame <= 5000:
+while currentFrame <= 30000:
 
     diff = current_milli_time() - last_frame
     if diff >= 10:
