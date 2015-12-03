@@ -60,16 +60,17 @@ while True:
                     print "Spacing {}".format(spacing)
                     print "Number {}".format(number)
                     for i in range(0,number):
-                        fin.seek( (frame_num+i*spacing) * 1024)
-                        send_data = fin.read(1024)
-                        barray = bytearray()
-                        barray.extend("{}".format(str(frame_num + i*spacing)))
-                        barray.extend(bytearray(5-len(barray)))
-                        barray.extend(send_data)
+                        if frame_num +i*spacing <= 30000:
+                            fin.seek( (frame_num+i*spacing) * 1024)
+                            send_data = fin.read(1024)
+                            barray = bytearray()
+                            barray.extend("{}".format(str(frame_num + i*spacing)))
+                            barray.extend(bytearray(5-len(barray)))
+                            barray.extend(send_data)
 
-                        # send response
-                        s.sendto(barray, address)
-                        print(barray)
-                        print(len(barray))
-                        time.sleep(40/1000.0)
+                            # send response
+                            s.sendto(barray, address)
+                            print(barray)
+                            print(len(barray))
+                            time.sleep(40/1000.0)
 
