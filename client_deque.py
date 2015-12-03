@@ -286,17 +286,18 @@ sock.sendto(message, server)"""
 last_frame = current_milli_time()
 # pre buffer
 def buffering():
-    while len(frame_deque) != frame_deque.maxlen:
+    while len(frame_list) < frame_list_max - 1:
         read_sockets, write_sockets, error_sockets = select.select([x[1] for x in active_server_list], [], [], 0)
         for s in read_sockets:
             if s == sock1 or s == sock2 or s == sock3 or s == sock4:
                 receive_data(frame_list, last_frame_num, s)
         fill_list(frame_deque, frame_list, last_frame_num, requests_sent)
-        add_to_deque(frame_deque, frame_list, last_frame_num, requests_sent)
+        if len(frame_deque) != frame_deque.maxlen:
+            add_to_deque(frame_deque, frame_list, last_frame_num, requests_sent)
 
 
 buffering()
-#pause(commands)
+pause(commands)
 last_frame = current_milli_time()
 # main loop
 while currentFrame <= 30000:
@@ -340,6 +341,13 @@ while currentFrame <= 30000:
 
     process_commands(commands)
 
+import csv
+
+f = open("frame_times.csv", "wb")
+wr = csv.writer(f, dialect="excel")
+for row in enumerate(frame_times):
+    wr.writerow(row)
+        
 frame_times.sort(reverse=True)
 # print(frame_times)
 
